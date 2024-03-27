@@ -1,0 +1,26 @@
+{
+  "name": "tix-api",
+  "version": "0.0.1",
+  "description": "Tix API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elyter/tix-API.git"
+  },
+  "author": "Eliott Bregere",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Elyter/tix-API/issues"
+  },
+  "homepage": "https://github.com/Elyter/tix-API#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "mysql2": "^3.9.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  }
+}
