@@ -7,9 +7,10 @@ const port = 3000;
 
 app.use(express.json());
 
-app.use('/', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-app.use('/', require('./routes/ping.js')); 
+app.use('/', require('./routes/ping.js'));
+app.use('/', require('./routes/register.js'));
 
 // Start the server
 app.listen(port, () => {
