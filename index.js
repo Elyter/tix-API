@@ -1,6 +1,6 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
-const specs = require('./swagger');
+const specs = require('./swagger-output.json');
 
 const app = express();
 const port = 3000;
@@ -11,6 +11,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use('/', require('./routes/ping.js'));
 app.use('/', require('./routes/register.js'));
+app.use('/', require('./routes/userData.js'));
 
 // Start the server
 app.listen(port, () => {
