@@ -12,6 +12,8 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs));
 app.use('/', require('./routes/ping.js'));
 app.use('/', require('./routes/register.js'));
 app.use('/', require('./routes/userData.js'));
+app.use('/', require('./routes/events.js'));
+app.use('/', require('./routes/images.js'));
 
 // Start the server
 app.listen(port, () => {
