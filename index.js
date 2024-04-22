@@ -15,6 +15,7 @@ app.use('/', require('./routes/userData.js'));
 app.use('/', require('./routes/events.js'));
 app.use('/', require('./routes/images.js'));
 app.use('/', require('./routes/likes.js'));
+app.use('/', require('./routes/organizers.js'));
 
 // Start the server
 app.listen(port, () => {
