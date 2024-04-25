@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const multer = require('multer');
-const fs = require('fs');
-const sharp = require('sharp');
+
+const sql = require('../db/db');
 
 // Définir une route pour servir les images
 router.get('/images/events/:imageName', (req, res) => {
@@ -28,7 +28,7 @@ router.get('/images/users/:imageName', (req, res) => {
     res.header('Access-Control-Allow-Origin', "*");
 
     const imageName = req.params.imageName;
-    const imagePath = path.join(__dirname, 'images/users', imageName + ".webp");
+    const imagePath = path.join(__dirname, 'images/users', imageName);
 
     // Envoyer l'image en réponse
     res.sendFile(imagePath, (err) => {
@@ -66,21 +66,17 @@ router.post('/images/users', (req, res) => {
         // Vérifie si un fichier a été envoyé
         if (!req.file) {
             return res.status(400).send({ error: 'Aucun fichier envoyé' });
-        }
+        } else {
+            // Enrengistrer le nom du fichier dans la base de données
+            const imageName = req.file.originalname + "." + req.file.mimetype.split('/')[1];
+            sql.query("UPDATE user SET pp = ? WHERE uid = ?", [imageName, req.file.originalname], function(err, result) {
+                if (err) {
+                    console.error('Erreur lors de l\'enregistrement du nom du fichier:', err);
+                    return res.status(500).send({ error: 'Erreur lors de l\'enregistrement du nom du fichier' });
+                }
 
-        try {
-            // Convertir l'image en .webp
-            const webpImage = await sharp(req.file.path)
-                .toFormat('webp')
-                .toFile(path.join(__dirname, 'images/users', `${req.file.originalname.split('.')[0]}.webp`));
-
-            // Supprimer l'image d'origine
-            fs.unlinkSync(req.file.path);
-
-            return res.status(200).send({ message: 'Image envoyée et convertie avec succès en .webp' });
-        } catch (error) {
-            console.error('Erreur lors de la conversion en .webp:', error);
-            return res.status(500).send({ error: 'Erreur lors de la conversion en .webp' });
+                return res.status(200).send({ message: 'Fichier enregistré avec succès' });
+            });
         }
     });
 });

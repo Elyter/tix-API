@@ -179,3 +179,5 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node,dotenv,macos
 
 firebase.json
+
+/routes/images/*
