@@ -29,14 +29,14 @@ router.post('/follows/:uid/:id', function(req, res) {
     const uid = req.params.uid;
     const id = req.params.id;
 
-    sql.query("SELECT * FROM follows WHERE uid = ? AND id = ?", [uid, id], function(err, result) {
+    sql.query("SELECT * FROM follows WHERE uid = ? AND idOrganizer = ?", [uid, id], function(err, result) {
         if (err) {
             console.log(err);
             res.status(500).send({ error: 'Erreur lors de la vérification du follow' });
             return;
         }
         if (result.length > 0) {
-            sql.query("DELETE FROM follows WHERE uid = ? AND id = ?", [uid, id], function(err, result) {
+            sql.query("DELETE FROM follows WHERE uid = ? AND idOrganizer = ?", [uid, id], function(err, result) {
                 if (err) {
                     console.log(err);
                     res.status(500).send({ error: 'Erreur lors du unfollow' });
@@ -46,7 +46,7 @@ router.post('/follows/:uid/:id', function(req, res) {
             });
             return;
         }
-        sql.query("INSERT INTO follows (uid, id) VALUES (?, ?)", [uid, id], function(err, result) {
+        sql.query("INSERT INTO follows (uid, idOrganizer) VALUES (?, ?)", [uid, id], function(err, result) {
             if (err) {
                 console.log(err);
                 res.status(500).send({ error: 'Erreur lors du follow' });
