@@ -3,7 +3,7 @@ const router = express.Router();
 
 const sql = require('../db/db');
 
-// endpoint qui prend en parmètre l'uid de l'utilisateur et renvoie le nombre de tickets achetés dans la table ticket et le nombres de likes dans la tables likes
+// endpoint qui prend en parmètre l'uid de l'utilisateur et renvoie le nombre de tickets achetés dans la table ticket et le nombres de likes dans la tables likes et le nombre d'abonnement dans la table follow
 router.get('/stats/:uid', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
@@ -26,7 +26,16 @@ router.get('/stats/:uid', function(req, res) {
             }
             const likes = result[0].likes;
 
-            res.status(200).send({ tickets, likes });
+            sql.query("SELECT COUNT(*) as followers FROM follows WHERE uid = ?", [uid], function(err, result) {
+                if (err) {
+                    console.log(err);
+                    res.status(500).send({ error: 'Erreur lors de la récupération des followers' });
+                    return;
+                }
+                const followers = result[0].followers;
+
+                res.status(200).send({ tickets, likes, followers });
+            });
         });
     });
 });
