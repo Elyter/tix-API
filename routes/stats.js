@@ -40,4 +40,22 @@ router.get('/stats/:uid', function(req, res) {
     });
 });
 
+// endpoint qui prend en parmètre l'id de l'organisateur et renvoie le nombre de followers dans la table follow
+router.get('/stats/followers/:id', function(req, res) {
+    res.header('Content-type', 'application/json');
+    res.header('Access-Control-Allow-Origin', "*");
+
+    const id = req.params.id;
+
+    sql.query("SELECT COUNT(*) as followers FROM follows WHERE idOrganizer = ?", [id], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.status(500).send({ error: 'Erreur lors de la récupération des followers' });
+            return;
+        }
+        const followers = result[0].followers;
+
+        res.status(200).send({ followers });
+    });
+});
 module.exports = router;

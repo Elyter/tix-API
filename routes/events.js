@@ -5,14 +5,15 @@ require('moment/locale/fr');
 
 const sql = require('../db/db');
 
-router.get('/events/', function(req, res) {
+// endpoint qui récupète tout les events et leurs informations et qui récupère aussi le nom de l'organistaeur à partir de son id
+router.get('/events', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
 
-    sql.query("SELECT * FROM events", function(err, result) {
+    sql.query("SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id", function(err, result) {
         if (err) {
             console.log(err);
-            res.status(500).send({ error: 'Erreur lors de la récupération de l\'évènements' });
+            res.status(500).send({ error: 'Erreur lors de la récupération des évènements' });
             return;
         }
         if (result.length > 0) {
@@ -27,28 +28,31 @@ router.get('/events/', function(req, res) {
     });
 });
 
+// endpoint qui récupère un event et le nom et la photo de profil de l'organisateur à partir de son id
 router.get('/events/:id', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
 
     const id = req.params.id;
 
-    sql.query("SELECT * FROM events WHERE id = ?", [id], function(err, result) {
+    sql.query("SELECT events.*, organizer.name AS organizerName, organizer.pp AS organizerPP FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id WHERE events.id = ?", [id], function(err, result) {
         if (err) {
             console.log(err);
             res.status(500).send({ error: 'Erreur lors de la récupération de l\'évènement' });
             return;
         }
         if (result.length > 0) {
-            // Formater la date pour l'événement
-            result[0].date = moment(result[0].date).format('dddd DD MMMM [à] HH:mm');
-            result[0].imageUrl = `/images/events/${id}.jpeg`;
-            res.status(200).send(result[0]);
+            const event = result[0];
+            event.date = moment(event.date).format('dddd DD MMMM [à] HH:mm');
+            event.imageUrl = `/images/events/${event.id}.jpeg`;
+            res.status(200).send(event);
             return;
         }
         res.status(404).send({ error: 'Événement non trouvé' });
     });
 });
+
+
 
 router.post('/events', function(req, res) {
     res.header('Content-type', 'application/json');
@@ -57,8 +61,6 @@ router.post('/events', function(req, res) {
     const eventData = req.body; // Les données fournies dans le corps de la requête   
 
     eventData.date = moment(eventData.date).format('YYYY-MM-DD HH:mm:ss');
-
-    console.log(eventData);
 
     // Vérifiez si des données sont fournies dans le corps de la requête
     if (Object.keys(eventData).length === 0) {
@@ -72,37 +74,34 @@ router.post('/events', function(req, res) {
             res.status(500).send({ error: 'Erreur lors de la création de l\'événement' });
             return;
         }
-        console.log(result);
         const eventId = result.insertId;
         res.status(200).send({ eventId: eventId });
     });
 });
 
-// une route pour récupérer les événements d'un organisateur avec en paramètre l'id de l'organisateur et si il faut renvoyer tout les évenements ou seulement ceux à venir ou passés et trirer les resultat par date
-router.get('/events/organizer/:id/:filter', function(req, res) {
+// une route pour récupérer les événements d'un organisateur avec le nom de l'organisateur à partir de son id avec en paramètre l'id de l'organisateur et si il faut renvoyer tout les évenements ou seulement ceux à venir ou passés et trirer les resultat par date
+router.get('/events/organizer/:id/:type', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
 
     const id = req.params.id;
-    const filter = req.params.filter;
+    const type = req.params.type;
 
-    let query = "SELECT * FROM events WHERE idOrganizer = ?";
-    if (filter === 'upcoming') {
-        query += " AND date > NOW() ORDER BY date";
-    } else if (filter === 'past') {
-        query += " AND date < NOW() ORDER BY date DESC";
-    } else {
-        query += " ORDER BY date";
+    let query = "SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id WHERE idOrganizer = ?";
+    if (type === 'past') {
+        query += " AND date < NOW()";
+    } else if (type === 'upcoming') {
+        query += " AND date > NOW()";
     }
+    query += " ORDER BY date";
 
     sql.query(query, [id], function(err, result) {
         if (err) {
             console.log(err);
-            res.status(500).send({ error: 'Erreur lors de la récupération de l\'évènements' });
+            res.status(500).send({ error: 'Erreur lors de la récupération des évènements' });
             return;
         }
         if (result.length > 0) {
-            // Formater la date pour chaque événement
             result.forEach(event => {
                 event.date = moment(event.date).format('dddd DD MMMM [à] HH:mm');
                 event.imageUrl = `/images/events/${event.id}.jpeg`;
@@ -110,6 +109,7 @@ router.get('/events/organizer/:id/:filter', function(req, res) {
             res.status(200).send(result);
             return;
         }
+        res.status(404).send({ error: 'Aucun événement trouvé' });
     });
 });
 

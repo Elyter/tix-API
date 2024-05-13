@@ -4,6 +4,7 @@ const moment = require('moment');
 
 const sql = require('../db/db');
 
+// endpoint qui récupère un ticket à partir de son id
 router.post('/tickets/:uid/:id', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
@@ -38,6 +39,7 @@ router.post('/tickets/:uid/:id', function(req, res) {
     });
 });
 
+// endpoint qui récupère les tickets d'un utilisateur avec le nom de l'organisateur à partir de l'id en fonction de son uid et du type de ticket (past ou upcoming) et formater la date
 router.get('/tickets/:uid/:type', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
@@ -45,25 +47,26 @@ router.get('/tickets/:uid/:type', function(req, res) {
     const uid = req.params.uid;
     const type = req.params.type;
 
-    let query = "SELECT * FROM ticket INNER JOIN events ON ticket.idEvent = events.id WHERE uid = ?";
-
+    let query = "SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id WHERE events.id IN (SELECT idEvent FROM ticket WHERE uid = ?)";
     if (type === 'past') {
         query += " AND date < NOW()";
     } else if (type === 'upcoming') {
-        query += " AND date >= NOW()";
+        query += " AND date > NOW()";
     }
 
     sql.query(query, [uid], function(err, result) {
         if (err) {
             console.log(err);
-            return res.status(500).send({ error: 'Erreur lors de la récupération des tickets' });
+            res.status(500).send({ error: 'Erreur lors de la récupération des tickets' });
+            return;
         }
         if (result.length > 0) {
             result.forEach(event => {
                 event.date = moment(event.date).format('dddd DD MMMM [à] HH:mm');
                 event.imageUrl = `/images/events/${event.id}.jpeg`;
             });
-            return res.status(200).send(result);
+            res.status(200).send(result);
+            return;
         }
         res.status(404).send({ error: 'Aucun ticket trouvé' });
     });

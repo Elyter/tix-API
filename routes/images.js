@@ -19,13 +19,11 @@ function sendImage(req, res, imagePath) {
 
     // Événement de fin de lecture du flux
     imageStream.on('end', () => {
-        console.log('Lecture du fichier terminée');
         res.end(); // Terminer la réponse lorsque toute l'image a été envoyée
     });
 
     // Événement de fermeture de la connexion par le client
     res.on('close', () => {
-        console.log('Connexion fermée par le client');
         imageStream.destroy(); // Fermer le flux de lecture de l'image
     });
 
