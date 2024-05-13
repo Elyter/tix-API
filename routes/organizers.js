@@ -76,6 +76,27 @@ router.put('/organizers/:uid', function(req, res) {
     });
 });
 
+// endpoint qui prend en pramètre un nom d'organisateur et l'ajoute à la base de données
+router.post('/organizers', function(req, res) {
+    res.header('Content-type', 'application/json');
+    res.header('Access-Control-Allow-Origin', "*");
+
+    const organizerData = req.body; // Les données fournies dans le corps de la requête
+
+    // Vérifiez si des données sont fournies dans le corps de la requête
+    if (Object.keys(organizerData).length === 0) {
+        return res.status(400).send({ error: 'Aucune donnée fournie pour la création de l\'organisateur' });
+    }
+
+    // Exécutez la requête SQL avec les valeurs appropriées
+    sql.query("INSERT INTO organizer SET ?", organizerData, function(err, result) {
+        if (err) {
+            console.log(err);
+            return res.status(500).send({ error: 'Erreur lors de la création de l\'organisateur' });
+        }
+        res.status(200).send({ message: 'Organisateur créé' });
+    });
+});
 
 
 module.exports = router;
