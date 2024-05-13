@@ -10,7 +10,7 @@ router.get('/events', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
 
-    sql.query("SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id", function(err, result) {
+    sql.query("SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id ORDER BY id DESC", function(err, result) {
         if (err) {
             console.log(err);
             res.status(500).send({ error: 'Erreur lors de la récupération des évènements' });
