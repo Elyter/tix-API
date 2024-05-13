@@ -113,4 +113,40 @@ router.get('/events/organizer/:id/:type', function(req, res) {
     });
 });
 
+// endpoint pour faire une recherche d'évnènements par nom de l'évènements ou le nom de l'organisateur et par filtre (prix croissant, prix décroissant, date croissante, pas de filtre)
+router.get('/events/search/:search/:filter', function(req, res) {
+    res.header('Content-type', 'application/json');
+    res.header('Access-Control-Allow-Origin', "*");
+
+    const search = req.params.search;
+    const filter = req.params.filter;
+
+    let query = "SELECT events.*, organizer.name AS organizerName FROM events INNER JOIN organizer ON events.idOrganizer = organizer.id WHERE events.name LIKE ? OR organizer.name LIKE ?";
+    if (filter === 'priceAsc') {
+        query += " ORDER BY price";
+    } else if (filter === 'priceDesc') {
+        query += " ORDER BY price DESC";
+    } else if (filter === 'dateAsc') {
+        query += " ORDER BY date";
+    }
+
+    sql.query(query, [`%${search}%`, `%${search}%`], function(err, result) {
+        if (err) {
+            console.log(err);
+            res.status(500).send({ error: 'Erreur lors de la recherche des évènements' });
+            return;
+        }
+        if (result.length > 0) {
+            result.forEach(event => {
+                event.date = moment(event.date).format('dddd DD MMMM [à] HH:mm');
+                event.imageUrl = `/images/events/${event.id}.jpeg`;
+            });
+            res.status(200).send(result);
+            return;
+        }
+        res.status(404).send({ error: 'Aucun événement trouvé' });
+    });
+});
+
+
 module.exports = router;
