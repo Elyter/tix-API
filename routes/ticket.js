@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const moment = require('moment');
 
 const sql = require('../db/db');
 
-
-
-// endpoint qui prend en paramètre un uid et un id de l'event pour ajouter un ticket a un utilisateur une seul fois et renvoyer le detail de l'event associé 
 router.post('/tickets/:uid/:id', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
@@ -16,28 +14,23 @@ router.post('/tickets/:uid/:id', function(req, res) {
     sql.query("SELECT * FROM ticket WHERE uid = ? AND idEvent = ?", [uid, id], function(err, result) {
         if (err) {
             console.log(err);
-            res.status(500).send({ error: 'Erreur lors de la vérification du ticket' });
-            return;
+            return res.status(500).send({ error: 'Erreur lors de la vérification du ticket' });
         }
         if (result.length > 0) {
-            res.status(400).send({ error: 'Ticket déjà acheté' });
-            return;
+            return res.status(400).send({ error: 'Ticket déjà acheté' });
         }
         sql.query("INSERT INTO ticket (uid, idEvent) VALUES (?, ?)", [uid, id], function(err, result) {
             if (err) {
                 console.log(err);
-                res.status(500).send({ error: 'Erreur lors de l\'achat du ticket' });
-                return;
+                return res.status(500).send({ error: 'Erreur lors de l\'achat du ticket' });
             }
             sql.query("SELECT * FROM events WHERE id = ?", [id], function(err, result) {
                 if (err) {
                     console.log(err);
-                    res.status(500).send({ error: 'Erreur lors de la récupération de l\'évènement' });
-                    return;
+                    return res.status(500).send({ error: 'Erreur lors de la récupération de l\'évènement' });
                 }
                 if (result.length > 0) {
-                    res.status(200).send(result[0]);
-                    return;
+                    return res.status(200).send(result[0]);
                 }
                 res.status(404).send({ error: 'Événement non trouvé' });
             });
@@ -45,7 +38,6 @@ router.post('/tickets/:uid/:id', function(req, res) {
     });
 });
 
-// endpoint qui prend en parmètre past ou upcoming pour récupérer les tickets d'un utilisateur et renvoyer tout le détail de chaque event associé
 router.get('/tickets/:uid/:type', function(req, res) {
     res.header('Content-type', 'application/json');
     res.header('Access-Control-Allow-Origin', "*");
@@ -64,17 +56,17 @@ router.get('/tickets/:uid/:type', function(req, res) {
     sql.query(query, [uid], function(err, result) {
         if (err) {
             console.log(err);
-            res.status(500).send({ error: 'Erreur lors de la récupération des tickets' });
-            return;
+            return res.status(500).send({ error: 'Erreur lors de la récupération des tickets' });
         }
         if (result.length > 0) {
-            res.status(200).send(result);
-            return;
+            result.forEach(event => {
+                event.date = moment(event.date).format('dddd DD MMMM [à] HH:mm');
+                event.imageUrl = `/images/events/${event.id}.jpeg`;
+            });
+            return res.status(200).send(result);
         }
         res.status(404).send({ error: 'Aucun ticket trouvé' });
     });
 });
-
-
 
 module.exports = router;

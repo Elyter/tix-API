@@ -56,7 +56,7 @@ router.post('/events', function(req, res) {
 
     const eventData = req.body; // Les données fournies dans le corps de la requête   
 
-    eventData.date = moment(eventData.date, 'YYYY-MM-DD HH:mm').format('YYYY-MM-DD HH:mm:ss');
+    eventData.date = moment(eventData.date).format('YYYY-MM-DD HH:mm:ss');
 
     console.log(eventData);
 
@@ -65,7 +65,7 @@ router.post('/events', function(req, res) {
         return res.status(400).send({ error: 'Aucune donnée fournie pour la création de l\'événement' });
     }
 
-    // Créer une nouvelle entrée dans la base de données
+    // Créer une nouvelle entrée dans la base de données et récupérer l'ID de l'événement créé
     sql.query("INSERT INTO events (name, description, date, location, idOrganizer, price) VALUES (?, ?, ?, ?, ?, ?)", [eventData.name, eventData.description, eventData.date, eventData.location, eventData.idOrganizer, eventData.price], function(err, result) {
         if (err) {
             console.log(err);
@@ -73,7 +73,8 @@ router.post('/events', function(req, res) {
             return;
         }
         console.log(result);
-        res.status(200).send({ message: 'Événement créé' });
+        const eventId = result.insertId;
+        res.status(200).send({ eventId: eventId });
     });
 });
 
