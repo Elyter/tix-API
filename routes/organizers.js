@@ -101,7 +101,7 @@ router.post('/organizers', function(req, res) {
                 } else {
                     res.status(200).send({ message: 'Organisateur créé' });
                 }
-            }
+            });
         }
     });
 });
