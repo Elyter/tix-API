@@ -93,8 +93,16 @@ router.post('/organizers', function(req, res) {
         if (err) {
             console.log(err);
             return res.status(500).send({ error: 'Erreur lors de la création de l\'organisateur' });
+        } else {
+            sql.query("UPDATE users SET ROLE = 'ORGANIZER' WHERE uid = ?", [organizerData.uid], function(err, result) {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).send({ error: 'Erreur lors de la mise à jour du rôle de l\'utilisateur' });
+                } else {
+                    res.status(200).send({ message: 'Organisateur créé' });
+                }
+            }
         }
-        res.status(200).send({ message: 'Organisateur créé' });
     });
 });
 
